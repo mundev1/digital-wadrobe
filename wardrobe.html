@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Digital Wardrobe</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">👗</div>
+      <span>My Wardrobe</span>
+    </div>
+    <nav>
+      <button class="nav-tab active" onclick="showView('wardrobe', this)">👔 Wardrobe</button>
+      <button class="nav-tab" onclick="showView('outfits', this)">✨ Outfits</button>
+      <button class="nav-tab" onclick="showView('builder', this)">🎨 Builder</button>
+      <button class="nav-tab" onclick="showView('weather', this)">🌤️ Weather</button>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- WARDROBE -->
+    <div class="view active" id="view-wardrobe">
+      <div class="section-header">
+        <h2 class="section-title">My <em>Wardrobe</em></h2>
+        <button class="btn btn-primary" onclick="openModal()">＋ Add Piece</button>
+      </div>
+      <div class="filter-row" id="wfilters">
+        <button class="filter-btn active" onclick="setFilter('All',this)">All</button>
+        <button class="filter-btn" onclick="setFilter('Tops',this)">Tops</button>
+        <button class="filter-btn" onclick="setFilter('Bottoms',this)">Bottoms</button>
+        <button class="filter-btn" onclick="setFilter('Outerwear',this)">Outerwear</button>
+        <button class="filter-btn" onclick="setFilter('Shoes',this)">Shoes</button>
+        <button class="filter-btn" onclick="setFilter('Accessories',this)">Accessories</button>
+        <button class="filter-btn" onclick="setFilter('Dresses',this)">Dresses</button>
+        <input type="text" class="search-input" id="search-box" placeholder="🔍  Search..." oninput="renderWardrobe()">
+      </div>
+      <div class="clothing-grid" id="wardrobe-grid"></div>
+    </div>
+
+    <!-- OUTFITS -->
+    <div class="view" id="view-outfits">
+      <div class="section-header">
+        <h2 class="section-title">Saved <em>Outfits</em></h2>
+        <button class="btn btn-primary" onclick="goBuilder()">＋ New Outfit</button>
+      </div>
+      <div class="outfits-grid" id="outfits-grid"></div>
+    </div>
+
+    <!-- BUILDER -->
+    <div class="view" id="view-builder">
+      <div class="section-header">
+        <h2 class="section-title">Outfit <em>Builder</em></h2>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-outline" onclick="clearCanvas()">🗑 Clear</button>
+          <button class="btn btn-primary" onclick="saveOutfit()">💾 Save Outfit</button>
+        </div>
+      </div>
+      <div class="builder-wrap">
+        <div class="panel">
+          <h3>Your Look</h3>
+          <div class="outfit-name-row">
+            <input type="text" id="outfit-name" placeholder="Name this outfit...">
+          </div>
+          <div class="canvas" id="outfit-canvas">
+            <div class="canvas-empty">
+              <div class="ce-emoji">👗</div>
+              <p>Select items from the panel on the right!</p>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Your Pieces</h3>
+          <div class="filter-row" style="margin-bottom:12px">
+            <button class="filter-btn active btn-sm" onclick="setBFilter('All',this)">All</button>
+            <button class="filter-btn btn-sm" onclick="setBFilter('Tops',this)">Tops</button>
+            <button class="filter-btn btn-sm" onclick="setBFilter('Bottoms',this)">Bottoms</button>
+            <button class="filter-btn btn-sm" onclick="setBFilter('Shoes',this)">Shoes</button>
+          </div>
+          <div class="side-list" id="side-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEATHER -->
+    <div class="view" id="view-weather">
+      <div class="section-header">
+        <h2 class="section-title">Weather <em>Suggestions</em></h2>
+        <button class="btn btn-outline" onclick="loadWeather()">🔄 Refresh</button>
+      </div>
+      <div class="weather-search-row">
+        <input type="text" id="city-input" class="city-input"
+          placeholder="Enter your city (e.g. London, Mumbai, New York)...">
+        <button class="btn btn-primary" onclick="loadWeather()">Get Suggestions</button>
+      </div>
+      <div id="weather-idle" class="weather-idle">
+        <div style="font-size:56px;margin-bottom:16px">🌤️</div>
+        <h3>What should I wear today?</h3>
+        <p>Enter your city above to get outfit suggestions based on today's weather.</p>
+      </div>
+      <div id="weather-loading" class="weather-loading" style="display:none">
+        <div class="w-spinner"></div>
+        <p>Fetching weather data...</p>
+      </div>
+      <div id="weather-error" class="weather-error" style="display:none">
+        <div style="font-size:40px;margin-bottom:12px">😕</div>
+        <p id="weather-error-msg">Could not load weather. Check your city name.</p>
+      </div>
+      <div id="weather-card" class="weather-card" style="display:none">
+        <div class="weather-left">
+          <div class="weather-icon-big" id="w-icon">⛅</div>
+          <div class="weather-temp" id="w-temp">--°C</div>
+          <div class="weather-desc" id="w-desc">--</div>
+          <div class="weather-city" id="w-city">--</div>
+          <div class="weather-details">
+            <div class="w-detail"><span>💧</span><span id="w-humidity">--%</span></div>
+            <div class="w-detail"><span>💨</span><span id="w-wind">-- km/h</span></div>
+            <div class="w-detail"><span>🌡️</span><span id="w-feels">Feels --°C</span></div>
+          </div>
+        </div>
+        <div class="weather-right">
+          <div class="suggestion-label" id="w-label">Today's Recommended Look</div>
+          <div class="suggestion-subtitle" id="w-subtitle">Based on current conditions</div>
+          <div class="suggestion-tags" id="w-tags"></div>
+          <div class="suggestion-grid" id="suggestion-grid"></div>
+          <div id="no-suggestions" style="display:none;text-align:center;padding:30px;color:var(--muted)">
+            <div style="font-size:36px;margin-bottom:10px">🛍️</div>
+            <p>No matching items in your wardrobe yet.<br>Add some clothes first!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL -->
+  <div class="overlay" id="overlay" onclick="outsideClick(event)">
+    <div class="modal">
+      <h2>Add a Clothing Item ✨</h2>
+      <p class="sub">Fill in the details and upload a photo!</p>
+
+      <!-- PHOTO UPLOAD -->
+      <div class="fgroup">
+        <label class="flabel">Photo (optional)</label>
+        <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()">
+          <div class="upload-icon">📷</div>
+          <div class="upload-text">Click to upload a photo</div>
+          <div class="upload-hint">JPG or PNG</div>
+          <div class="upload-hover">
+            <div class="upload-icon">🔄</div>
+            <div class="upload-text">Change photo</div>
+          </div>
+        </div>
+        <input type="file" id="file-input" accept="image/*" onchange="handleUpload(event)">
+      </div>
+
+      <div class="fgroup">
+        <label class="flabel">Name *</label>
+        <input type="text" class="finput" id="input-name" placeholder="e.g. White linen shirt">
+      </div>
+
+      <div class="fgroup">
+        <label class="flabel">Category *</label>
+        <select class="fselect" id="input-cat">
+          <option value="Tops">Tops</option>
+          <option value="Bottoms">Bottoms</option>
+          <option value="Outerwear">Outerwear</option>
+          <option value="Shoes">Shoes</option>
+          <option value="Accessories">Accessories</option>
+          <option value="Dresses">Dresses</option>
+        </select>
+      </div>
+
+      <div class="fgroup">
+        <label class="flabel">Color</label>
+        <div class="palette" id="palette"></div>
+      </div>
+
+      <div class="fgroup">
+        <label class="flabel">Brand (optional)</label>
+        <input type="text" class="finput" id="input-brand" placeholder="e.g. Zara, H&M...">
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="addItem()">Add to Wardrobe</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">
+    <span id="t-icon">✅</span>
+    <span id="t-msg">Done!</span>
+  </div>
+  <script src="script.js"></script>
+</body>
+
+</html>
